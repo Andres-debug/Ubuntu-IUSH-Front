@@ -19,7 +19,7 @@ export const AppBar = () => {
     return (
         <div className="w-full bg-white shadow-md p-4 flex justify-between items-center">
             <div className="flex items-center">
-                <h1 className="text-xl font-semibold text-gray-800">OmegaLab</h1>
+                <h1 className="text-xl font-semibold text-gray-800">Studenzen</h1>
             </div>
             
             <div className="flex items-center gap-4">
@@ -35,7 +35,6 @@ export const AppBar = () => {
                     </div>
                     <div className="hidden md:block">
                         <p className="text-sm font-medium text-gray-700">Usuario</p>
-                        <p className="text-xs text-gray-500">Estudiante</p>
                     </div>
                 </div>
                 

@@ -1,46 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../app/stores/auth.store';
 
-interface LoginPageProps {
-  setIsAuthenticated: (value: boolean) => void;
-}
-
-const LoginPage = ({ setIsAuthenticated }: LoginPageProps) => {
+const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  
+  // Usar el store de autenticación
+  const { login, isLoading, error, isAuthenticated, user, getUser } = useAuthStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redireccionar si ya está autenticado
+  useEffect(() => {
+    const currentUser = getUser();
+    
+    if (isAuthenticated && currentUser) {
+      // Redirigir según el rol del usuario
+      if (currentUser.role === 'admin') {
+        navigate('/dashboard');
+      } else if (currentUser.role === 'student') {
+        navigate('/student/dashboard');
+      }
+    }
+  }, [isAuthenticated, navigate, getUser]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (username && password) {
-      // Almacenamos el token
-      localStorage.setItem('token', 'fake-token');
+      const success = await login(username, password);
       
-      // Actualizamos el estado de autenticación
-      setIsAuthenticated(true);
-      
-      // Emitimos un evento personalizado para notificar el cambio en localStorage
-      window.dispatchEvent(new Event('storage-changed'));
-      
-      // Navegamos al dashboard
-      navigate('/dashboard');
+      if (success) {
+        const currentUser = getUser();
+        
+        // Redirigir según el rol del usuario
+        if (currentUser?.role === 'admin') {
+          navigate('/dashboard');
+        } else if (currentUser?.role === 'student') {
+          navigate('/student/dashboard');
+        }
+      }
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100">
       <div className="w-full max-w-md p-10 mx-4 bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl">
-        <h1 className="text-2xl font-medium mb-8 text-center text-gray-800 tracking-tight">
-          Inicio de Sesión
-        </h1>
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold mb-2 text-gray-800 tracking-tight">
+            Sistema Académico
+          </h1>
+          <p className="text-gray-600">Inicia sesión para acceder al sistema</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        {error && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Usuario */}
           <div className="flex flex-col gap-2">
             <label
               htmlFor="username"
-              className="text-gray-600 text-sm font-normal p-[2%]"
+              className="text-gray-600 text-sm font-medium"
             >
               Usuario
             </label>
@@ -59,7 +93,7 @@ const LoginPage = ({ setIsAuthenticated }: LoginPageProps) => {
           <div className="flex flex-col gap-2">
             <label
               htmlFor="password"
-              className="text-gray-600 text-sm font-normal p-[2%]"
+              className="text-gray-600 text-sm font-medium"
             >
               Contraseña
             </label>
@@ -73,40 +107,61 @@ const LoginPage = ({ setIsAuthenticated }: LoginPageProps) => {
               required
             />
           </div>
+          
           {/* Recordarme */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <input
                 id="remember"
                 type="checkbox"
                 className="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded cursor-pointer"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
               />
-              <label htmlFor="remember" className="cursor-pointer">
+              <label htmlFor="remember" className="cursor-pointer text-gray-600">
                 Recordarme
               </label>
             </div>
             <a
               href="#"
-              className="text-blue-500 hover:text-blue-700 font-medium mt-2 sm:mt-0"
+              className="text-blue-500 hover:text-blue-700 font-medium"
             >
               ¿Olvidó su contraseña?
             </a>
           </div>
+          
+          {/* Guía de usuarios */}
+          <div className="bg-blue-50 p-4 rounded-md text-sm text-blue-800">
+            <p className="font-medium mb-1">Usuarios de demostración:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Admin:</strong> usuario: admin, contraseña: password</li>
+              <li><strong>Estudiante:</strong> usuario: student, contraseña: password</li>
+            </ul>
+          </div>
+          
           {/* Botón */}
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium text-base py-3 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-base py-3 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Iniciar sesión
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Iniciando sesión...
+              </>
+            ) : (
+              'Iniciar sesión'
+            )}
           </button>
         </form>
 
-        {/* Registro */}
+        {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-500">
-          ¿No tiene una cuenta?{" "}
-          <a href="#" className="text-blue-500 hover:text-blue-700 font-medium">
-            Registrarse
-          </a>
+          Universidad - Sistema de Gestión Académica © 2025
         </div>
       </div>
     </div>

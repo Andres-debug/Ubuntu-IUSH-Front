@@ -35,28 +35,43 @@ const FacultadesPage = () => {
         {facultades.map((facultad) => (
           <div 
             key={facultad.id} 
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full"
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <BsBuilding className="text-blue-600 text-2xl mr-3" />
-                  <h3 className="text-xl font-semibold text-gray-800">{facultad.nombre}</h3>
+            <div className="p-6 flex flex-col h-full">
+              {/* Encabezado de la tarjeta con mejor manejo para títulos largos */}
+              <div className="flex items-start justify-between mb-4 gap-3">
+                <div className="flex items-start">
+                  <div className="bg-blue-50 p-2 rounded-full flex-shrink-0 mt-1">
+                    <BsBuilding className="text-blue-600 text-xl" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 ml-3 break-words max-w-[170px]">{facultad.nombre}</h3>
                 </div>
-                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1.5 rounded-full flex-shrink-0 whitespace-nowrap">
                   {facultad.codigo}
                 </span>
               </div>
-              <p className="text-gray-600 mb-4">{facultad.descripcion}</p>
-              <div className="flex justify-between items-center text-sm text-gray-600 mb-4">
-                <div>
-                  <p><span className="font-medium">Decano:</span> {facultad.decano}</p>
-                  <p><span className="font-medium">Creación:</span> {facultad.fechaCreacion}</p>
+              
+              {/* Descripción */}
+              <div className="mb-5 flex-grow">
+                <p className="text-gray-600 line-clamp-3">{facultad.descripcion || "No hay descripción disponible."}</p>
+              </div>
+              
+              {/* Información adicional mejor estructurada */}
+              <div className="grid grid-cols-1 gap-2 text-sm text-gray-600 mb-5 mt-auto">
+                <div className="grid grid-cols-[100px_1fr] gap-1 items-center">
+                  <span className="font-medium text-gray-700">Decano:</span>
+                  <span className="text-right truncate">{facultad.decano || "No asignado"}</span>
+                </div>
+                <div className="grid grid-cols-[100px_1fr] gap-1 items-center">
+                  <span className="font-medium text-gray-700">Creación:</span>
+                  <span className="text-right">{facultad.fechaCreacion || "Fecha no disponible"}</span>
                 </div>
               </div>
+              
+              {/* Botón de acción */}
               <button
                 onClick={() => handleViewFacultad(facultad.id)}
-                className="flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors duration-300"
+                className="flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md transition-colors duration-300"
               >
                 <BsEye className="mr-2" />
                 Ver Detalle

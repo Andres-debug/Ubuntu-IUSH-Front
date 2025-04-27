@@ -6,108 +6,10 @@ import {
 } from 'react-icons/hi';
 import { FaRegSadTear, FaRegMeh, FaRegSmile } from 'react-icons/fa';
 import { IoFilterOutline } from 'react-icons/io5';
-
-// Tipos para nuestra interfaz
-interface Estudiante {
-  id: number;
-  nombre: string;
-  carnet: string;
-  programa: string;
-  semestre: number;
-  nivelEstres: number; // 1-100
-  nivelAnsiedad: number; // 1-100
-  riesgoDesercion: number; // 1-100
-  ultimaActualizacion: string;
-  indicadores: {
-    asistencia: number; // porcentaje
-    rendimiento: number; // porcentaje
-    cargaAcademica: number; // horas por semana
-  }
-}
-
-// Datos de prueba
-const estudiantes: Estudiante[] = [
-  {
-    id: 1,
-    nombre: "María Rodríguez",
-    carnet: "EST-2021-001",
-    programa: "Ingeniería de Sistemas",
-    semestre: 6,
-    nivelEstres: 82,
-    nivelAnsiedad: 75,
-    riesgoDesercion: 68,
-    ultimaActualizacion: "2025-04-20",
-    indicadores: {
-      asistencia: 65,
-      rendimiento: 58,
-      cargaAcademica: 45
-    }
-  },
-  {
-    id: 2,
-    nombre: "Juan Pérez",
-    carnet: "EST-2022-042",
-    programa: "Administración de Empresas",
-    semestre: 4,
-    nivelEstres: 45,
-    nivelAnsiedad: 30,
-    riesgoDesercion: 25,
-    ultimaActualizacion: "2025-04-22",
-    indicadores: {
-      asistencia: 90,
-      rendimiento: 85,
-      cargaAcademica: 38
-    }
-  },
-  {
-    id: 3,
-    nombre: "Carlos Martínez",
-    carnet: "EST-2020-195",
-    programa: "Psicología",
-    semestre: 7,
-    nivelEstres: 92,
-    nivelAnsiedad: 88,
-    riesgoDesercion: 78,
-    ultimaActualizacion: "2025-04-25",
-    indicadores: {
-      asistencia: 42,
-      rendimiento: 51,
-      cargaAcademica: 52
-    }
-  },
-  {
-    id: 4,
-    nombre: "Ana Gómez",
-    carnet: "EST-2023-087",
-    programa: "Derecho",
-    semestre: 2,
-    nivelEstres: 65,
-    nivelAnsiedad: 62,
-    riesgoDesercion: 45,
-    ultimaActualizacion: "2025-04-21",
-    indicadores: {
-      asistencia: 78,
-      rendimiento: 72,
-      cargaAcademica: 42
-    }
-  },
-  {
-    id: 5,
-    nombre: "Roberto Sánchez",
-    carnet: "EST-2021-156",
-    programa: "Ingeniería Civil",
-    semestre: 5,
-    nivelEstres: 20,
-    nivelAnsiedad: 15,
-    riesgoDesercion: 10,
-    ultimaActualizacion: "2025-04-23",
-    indicadores: {
-      asistencia: 95,
-      rendimiento: 92,
-      cargaAcademica: 36
-    }
-  }
-];
+import { useAnalisisEstresStore } from '../../app/stores/analisisEstresStore';
+import { useEstudianteStore } from '../../app/stores/estudianteStore';
+import { useProgramaStore } from '../../app/stores/programaStore';
+import { AnalisisEstres } from '../../app/types';
 
 // Componente para la barra de indicador
 const IndicadorBarra = ({ valor, etiqueta }: { valor: number, etiqueta: string }) => {
@@ -147,17 +49,20 @@ const IndicadorBarra = ({ valor, etiqueta }: { valor: number, etiqueta: string }
 };
 
 // Tarjeta de estudiante
-const EstudianteTarjeta = ({ estudiante }: { estudiante: Estudiante }) => {
+const EstudianteTarjeta = ({ analisis, estudiante }: { 
+  analisis: AnalisisEstres, 
+  estudiante: { nombre: string, apellido: string, programa: string, carnet: string, semestre: number }
+}) => {
   // Determinar el estado basado en el nivel de estrés
   const getEstadoEstudiante = () => {
-    if (estudiante.nivelEstres >= 70 || estudiante.nivelAnsiedad >= 70 || estudiante.riesgoDesercion >= 70) {
+    if (analisis.nivelEstres >= 70 || analisis.nivelAnsiedad >= 70 || analisis.riesgoDesercion >= 70) {
       return {
         texto: "Alto riesgo",
         color: "text-red-600",
         bgColor: "bg-red-100",
         icono: <HiOutlineExclamationCircle className="text-red-600" />
       };
-    } else if (estudiante.nivelEstres >= 40 || estudiante.nivelAnsiedad >= 40 || estudiante.riesgoDesercion >= 40) {
+    } else if (analisis.nivelEstres >= 40 || analisis.nivelAnsiedad >= 40 || analisis.riesgoDesercion >= 40) {
       return {
         texto: "Precaución",
         color: "text-yellow-600",
@@ -180,7 +85,7 @@ const EstudianteTarjeta = ({ estudiante }: { estudiante: Estudiante }) => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">{estudiante.nombre}</h3>
+          <h3 className="text-lg font-semibold text-gray-800">{estudiante.nombre} {estudiante.apellido}</h3>
           <p className="text-sm text-gray-500">{estudiante.carnet} • {estudiante.programa}</p>
           <p className="text-xs text-gray-500">Semestre {estudiante.semestre}</p>
         </div>
@@ -191,34 +96,34 @@ const EstudianteTarjeta = ({ estudiante }: { estudiante: Estudiante }) => {
       </div>
 
       <div className="space-y-4 mt-4">
-        <IndicadorBarra valor={estudiante.nivelEstres} etiqueta="Nivel de Estrés" />
-        <IndicadorBarra valor={estudiante.nivelAnsiedad} etiqueta="Nivel de Ansiedad" />
-        <IndicadorBarra valor={estudiante.riesgoDesercion} etiqueta="Riesgo de Deserción" />
+        <IndicadorBarra valor={analisis.nivelEstres} etiqueta="Nivel de Estrés" />
+        <IndicadorBarra valor={analisis.nivelAnsiedad} etiqueta="Nivel de Ansiedad" />
+        <IndicadorBarra valor={analisis.riesgoDesercion} etiqueta="Riesgo de Deserción" />
       </div>
 
       <div className="mt-5 pt-5 border-t border-gray-100">
         <div className="grid grid-cols-3 gap-2 text-center">
           <div>
             <p className="text-xs text-gray-500">Asistencia</p>
-            <p className={`text-sm font-medium ${estudiante.indicadores.asistencia < 70 ? 'text-red-600' : 'text-gray-700'}`}>
-              {estudiante.indicadores.asistencia}%
+            <p className={`text-sm font-medium ${analisis.indicadores.asistencia < 70 ? 'text-red-600' : 'text-gray-700'}`}>
+              {analisis.indicadores.asistencia}%
             </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Rendimiento</p>
-            <p className={`text-sm font-medium ${estudiante.indicadores.rendimiento < 70 ? 'text-red-600' : 'text-gray-700'}`}>
-              {estudiante.indicadores.rendimiento}%
+            <p className={`text-sm font-medium ${analisis.indicadores.rendimiento < 70 ? 'text-red-600' : 'text-gray-700'}`}>
+              {analisis.indicadores.rendimiento}%
             </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Carga Acad.</p>
-            <p className={`text-sm font-medium ${estudiante.indicadores.cargaAcademica > 45 ? 'text-red-600' : 'text-gray-700'}`}>
-              {estudiante.indicadores.cargaAcademica}h
+            <p className={`text-sm font-medium ${analisis.indicadores.cargaAcademica > 45 ? 'text-red-600' : 'text-gray-700'}`}>
+              {analisis.indicadores.cargaAcademica}h
             </p>
           </div>
         </div>
         <p className="text-xs text-center text-gray-400 mt-3">
-          Actualizado: {estudiante.ultimaActualizacion}
+          Actualizado: {analisis.ultimaActualizacion}
         </p>
       </div>
     </div>
@@ -228,43 +133,88 @@ const EstudianteTarjeta = ({ estudiante }: { estudiante: Estudiante }) => {
 const AnalisisEstresPage = () => {
   const [filtro, setFiltro] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
-  const [estudiantesFiltrados, setEstudiantesFiltrados] = useState<Estudiante[]>(estudiantes);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
-  // Filtrar estudiantes basados en el estado actual
+  // Usar los stores de Zustand
+  const { 
+    analisisEstres, 
+    isLoading, 
+    error, 
+    getAnalisisEstres 
+  } = useAnalisisEstresStore();
+
+  const { estudiantes, getEstudiantes } = useEstudianteStore();
+  const { programas, getProgramas } = useProgramaStore();
+
   useEffect(() => {
-    let resultado = estudiantes;
+    // Cargar los datos necesarios
+    getAnalisisEstres();
+    getEstudiantes();
+    getProgramas();
+  }, [getAnalisisEstres, getEstudiantes, getProgramas]);
+
+  // Preparar los datos combinados para mostrar
+  const analisisConInfo = analisisEstres.map(analisis => {
+    const estudiante = estudiantes.find(e => e.id === analisis.estudianteId);
+    const programa = estudiante ? programas.find(p => p.id === estudiante.programaId) : null;
+    
+    return {
+      analisis,
+      estudiante: estudiante ? {
+        nombre: estudiante.nombre,
+        apellido: estudiante.apellido,
+        carnet: estudiante.carnet,
+        semestre: estudiante.semestre,
+        programa: programa ? programa.nombre : 'Programa no encontrado'
+      } : {
+        nombre: 'Estudiante',
+        apellido: 'Desconocido',
+        carnet: 'N/A',
+        semestre: 0,
+        programa: 'Programa no encontrado'
+      }
+    };
+  });
+
+  // Filtrar análisis basados en el estado actual
+  const analisisFiltrados = analisisConInfo.filter(item => {
+    const { analisis, estudiante } = item;
     
     // Aplicar filtro por nivel de riesgo
-    if (filtro === 'alto-riesgo') {
-      resultado = resultado.filter(e => e.nivelEstres >= 70 || e.nivelAnsiedad >= 70 || e.riesgoDesercion >= 70);
-    } else if (filtro === 'precaucion') {
-      resultado = resultado.filter(e => 
-        (e.nivelEstres >= 40 && e.nivelEstres < 70) || 
-        (e.nivelAnsiedad >= 40 && e.nivelAnsiedad < 70) || 
-        (e.riesgoDesercion >= 40 && e.riesgoDesercion < 70)
-      );
-    } else if (filtro === 'saludable') {
-      resultado = resultado.filter(e => e.nivelEstres < 40 && e.nivelAnsiedad < 40 && e.riesgoDesercion < 40);
+    if (filtro === 'alto-riesgo' && 
+        !(analisis.nivelEstres >= 70 || analisis.nivelAnsiedad >= 70 || analisis.riesgoDesercion >= 70)) {
+      return false;
+    } else if (filtro === 'precaucion' && 
+              !((analisis.nivelEstres >= 40 && analisis.nivelEstres < 70) || 
+                (analisis.nivelAnsiedad >= 40 && analisis.nivelAnsiedad < 70) || 
+                (analisis.riesgoDesercion >= 40 && analisis.riesgoDesercion < 70))) {
+      return false;
+    } else if (filtro === 'saludable' && 
+              !(analisis.nivelEstres < 40 && analisis.nivelAnsiedad < 40 && analisis.riesgoDesercion < 40)) {
+      return false;
     }
     
     // Aplicar búsqueda
     if (busqueda) {
       const terminoBusqueda = busqueda.toLowerCase();
-      resultado = resultado.filter(e => 
-        e.nombre.toLowerCase().includes(terminoBusqueda) || 
-        e.carnet.toLowerCase().includes(terminoBusqueda) ||
-        e.programa.toLowerCase().includes(terminoBusqueda)
-      );
+      const nombreCompleto = `${estudiante.nombre} ${estudiante.apellido}`.toLowerCase();
+      return nombreCompleto.includes(terminoBusqueda) || 
+             estudiante.carnet.toLowerCase().includes(terminoBusqueda) ||
+             estudiante.programa.toLowerCase().includes(terminoBusqueda);
     }
     
-    setEstudiantesFiltrados(resultado);
-  }, [filtro, busqueda]);
+    return true;
+  });
 
   // Calcular estadísticas generales
-  const totalEstudiantes = estudiantes.length;
-  const estudiantesRiesgo = estudiantes.filter(e => e.nivelEstres >= 70 || e.nivelAnsiedad >= 70 || e.riesgoDesercion >= 70).length;
-  const porcentajeRiesgo = Math.round((estudiantesRiesgo / totalEstudiantes) * 100);
+  const totalEstudiantes = analisisEstres.length;
+  const estudiantesRiesgo = analisisEstres.filter(a => 
+    a.nivelEstres >= 70 || a.nivelAnsiedad >= 70 || a.riesgoDesercion >= 70
+  ).length;
+  const estudiantesSaludable = analisisEstres.filter(a => 
+    a.nivelEstres < 40 && a.nivelAnsiedad < 40 && a.riesgoDesercion < 40
+  ).length;
+  const porcentajeRiesgo = Math.round((estudiantesRiesgo / totalEstudiantes) * 100) || 0;
 
   return (
     <div className="space-y-6">
@@ -304,9 +254,7 @@ const AnalisisEstresPage = () => {
           </div>
           <div>
             <p className="text-sm text-gray-500">Estudiantes en estado saludable</p>
-            <p className="text-2xl font-bold text-gray-800">
-              {estudiantes.filter(e => e.nivelEstres < 40 && e.nivelAnsiedad < 40 && e.riesgoDesercion < 40).length}
-            </p>
+            <p className="text-2xl font-bold text-gray-800">{estudiantesSaludable}</p>
           </div>
         </div>
       </div>
@@ -365,17 +313,35 @@ const AnalisisEstresPage = () => {
         )}
       </div>
       
-      {/* Lista de estudiantes */}
-      {estudiantesFiltrados.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {estudiantesFiltrados.map(estudiante => (
-            <EstudianteTarjeta key={estudiante.id} estudiante={estudiante} />
-          ))}
+      {/* Estado de carga */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : error ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline"> {error}</span>
         </div>
       ) : (
-        <div className="text-center py-10 bg-white rounded-lg shadow-sm">
-          <p className="text-gray-500">No se encontraron estudiantes que coincidan con los criterios.</p>
-        </div>
+        <>
+          {/* Lista de estudiantes */}
+          {analisisFiltrados.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {analisisFiltrados.map(item => (
+                <EstudianteTarjeta 
+                  key={item.analisis.id} 
+                  analisis={item.analisis} 
+                  estudiante={item.estudiante} 
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-white rounded-lg shadow-sm">
+              <p className="text-gray-500">No se encontraron estudiantes que coincidan con los criterios.</p>
+            </div>
+          )}
+        </>
       )}
       
       {/* Información del sistema */}

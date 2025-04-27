@@ -1,12 +1,54 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { IoMdHome } from "react-icons/io";
-import { MdKeyboardArrowLeft, MdSchool } from "react-icons/md";
+import { MdSchool, MdChevronLeft } from "react-icons/md";
 import { FaGraduationCap } from "react-icons/fa";
-import { HiOutlineClipboardCheck, HiOutlineChartBar } from "react-icons/hi";
+import { HiOutlineClipboardCheck, HiOutlineChartBar, HiMenuAlt2 } from "react-icons/hi";
 import { Link, useLocation } from "react-router-dom";
 
-export const Navbar = () => {
+// Crear contexto para compartir el estado de expansión del navbar
+export const NavbarContext = createContext<{
+    isExpanded: boolean;
+    toggleNavbar: () => void;
+}>({
+    isExpanded: true,
+    toggleNavbar: () => {}
+});
+
+export const useNavbar = () => useContext(NavbarContext);
+
+export const NavbarProvider = ({ children }: { children: React.ReactNode }) => {
     const [isExpanded, setIsExpanded] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Detectar si el dispositivo es móvil
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+            if (window.innerWidth < 768) {
+                setIsExpanded(false); // Colapsar automáticamente en móvil
+            } else {
+                setIsExpanded(true); // Expandir en escritorio
+            }
+        };
+        
+        checkMobile(); // Comprobar al inicio
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const toggleNavbar = () => {
+        setIsExpanded(!isExpanded);
+    };
+
+    return (
+        <NavbarContext.Provider value={{ isExpanded, toggleNavbar }}>
+            {children}
+        </NavbarContext.Provider>
+    );
+};
+
+export const Navbar = () => {
+    const { isExpanded, toggleNavbar } = useNavbar();
     const [isMobile, setIsMobile] = useState(false);
     const location = useLocation();
     
@@ -32,19 +74,12 @@ export const Navbar = () => {
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 768);
-            if (window.innerWidth < 768) {
-                setIsExpanded(false); // Colapsar automáticamente en móvil
-            }
         };
         
         checkMobile(); // Comprobar al inicio
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
-
-    const toggleNavbar = () => {
-        setIsExpanded(!isExpanded);
-    };
 
     const handleMenuItemClick = (itemName: string) => {
         setActiveItem(itemName);
@@ -114,26 +149,42 @@ export const Navbar = () => {
         );
     }
 
-    // Navbar para escritorio (lateral) - Mejorado
+    // Navbar para escritorio (lateral) - Mejorado y fijo
     return (
         <div 
-            className={`bg-white h-screen border-r border-gray-200 shadow-sm transition-all duration-300 ease-in-out ${
-                isExpanded ? "w-[250px]" : "w-[80px]"
+            className={`bg-white h-screen border-r border-gray-200 shadow-sm transition-all duration-300 ease-in-out fixed top-0 left-0 z-10 overflow-y-auto group ${
+                isExpanded ? "w-[250px]" : "w-[80px] hover:w-[250px]"
             }`}
         >
-            {/* Logo o título */}
-            <div className="h-16 flex items-center justify-center border-b border-gray-100">
-                {isExpanded ? (
-                    <h2 className="text-xl font-semibold text-gray-800">OmegaLab</h2>
-                ) : (
-                    <h2 className="text-xl font-bold text-blue-600">O</h2>
-                )}
+            {/* Logo y control de colapsar/expandir en la cabecera */}
+            <div className="h-16 flex items-center justify-between border-b border-gray-100 px-4">
+                <div className="flex items-center">
+                    <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50">
+                        <span className="text-xl font-bold text-blue-600">O</span>
+                    </div>
+                    <h2 className={`ml-3 text-xl font-semibold text-gray-800 whitespace-nowrap transition-opacity duration-300 ${
+                        isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    }`}>
+                        OmegaLab
+                    </h2>
+                </div>
+                <button 
+                    onClick={toggleNavbar}
+                    className={`w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-all duration-200 ${
+                        isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    }`}
+                >
+                    <MdChevronLeft 
+                        className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : 'rotate-180'}`} 
+                        size={22}
+                    />
+                </button>
             </div>
             
             {/* Contenido principal del Navbar */}
-            <div className="py-6 px-4">
+            <div className="py-6 px-3">
                 {/* Menú de navegación */}
-                <nav className="flex flex-col gap-2 mb-6">
+                <nav className="flex flex-col gap-1">
                     <Link 
                         to="/dashboard"
                         className={`flex items-center rounded-lg py-3 px-3 transition-all duration-200 ${
@@ -143,12 +194,18 @@ export const Navbar = () => {
                         }`}
                         onClick={() => handleMenuItemClick("inicio")}
                     >
-                        <div className={`min-w-8 flex justify-center ${!isExpanded ? 'w-full' : ''}`}>
+                        <div className={`flex justify-center w-8`}>
                             <IoMdHome className={`${activeItem === "inicio" ? "text-blue-600" : "text-gray-500"} text-xl`} />
                         </div>
-                        {isExpanded && <span className="ml-3 transition-opacity duration-200">Inicio</span>}
-                        {isExpanded && activeItem === "inicio" && (
-                            <div className="ml-auto w-1 h-5 bg-blue-600 rounded-full"></div>
+                        <span className={`ml-3 transition-all duration-300 whitespace-nowrap ${
+                            isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}>
+                            Inicio
+                        </span>
+                        {activeItem === "inicio" && (
+                            <div className={`ml-auto w-1.5 h-5 bg-blue-600 rounded-full transition-opacity duration-300 ${
+                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}></div>
                         )}
                     </Link>
                     
@@ -161,12 +218,18 @@ export const Navbar = () => {
                         }`}
                         onClick={() => handleMenuItemClick("facultades")}
                     >
-                        <div className={`min-w-8 flex justify-center ${!isExpanded ? 'w-full' : ''}`}>
+                        <div className={`flex justify-center w-8`}>
                             <MdSchool className={`${activeItem === "facultades" ? "text-blue-600" : "text-gray-500"} text-xl`} />
                         </div>
-                        {isExpanded && <span className="ml-3 transition-opacity duration-200">Facultades</span>}
-                        {isExpanded && activeItem === "facultades" && (
-                            <div className="ml-auto w-1 h-5 bg-blue-600 rounded-full"></div>
+                        <span className={`ml-3 transition-all duration-300 whitespace-nowrap ${
+                            isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}>
+                            Facultades
+                        </span>
+                        {activeItem === "facultades" && (
+                            <div className={`ml-auto w-1.5 h-5 bg-blue-600 rounded-full transition-opacity duration-300 ${
+                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}></div>
                         )}
                     </Link>
                     
@@ -179,12 +242,18 @@ export const Navbar = () => {
                         }`}
                         onClick={() => handleMenuItemClick("programas")}
                     >
-                        <div className={`min-w-8 flex justify-center ${!isExpanded ? 'w-full' : ''}`}>
+                        <div className={`flex justify-center w-8`}>
                             <FaGraduationCap className={`${activeItem === "programas" ? "text-blue-600" : "text-gray-500"} text-xl`} />
                         </div>
-                        {isExpanded && <span className="ml-3 transition-opacity duration-200">Programas</span>}
-                        {isExpanded && activeItem === "programas" && (
-                            <div className="ml-auto w-1 h-5 bg-blue-600 rounded-full"></div>
+                        <span className={`ml-3 transition-all duration-300 whitespace-nowrap ${
+                            isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}>
+                            Programas
+                        </span>
+                        {activeItem === "programas" && (
+                            <div className={`ml-auto w-1.5 h-5 bg-blue-600 rounded-full transition-opacity duration-300 ${
+                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}></div>
                         )}
                     </Link>
 
@@ -197,12 +266,18 @@ export const Navbar = () => {
                         }`}
                         onClick={() => handleMenuItemClick("cargaAcademica")}
                     >
-                        <div className={`min-w-8 flex justify-center ${!isExpanded ? 'w-full' : ''}`}>
+                        <div className={`flex justify-center w-8`}>
                             <HiOutlineClipboardCheck className={`${activeItem === "cargaAcademica" ? "text-blue-600" : "text-gray-500"} text-xl`} />
                         </div>
-                        {isExpanded && <span className="ml-3 transition-opacity duration-200">Carga Académica</span>}
-                        {isExpanded && activeItem === "cargaAcademica" && (
-                            <div className="ml-auto w-1 h-5 bg-blue-600 rounded-full"></div>
+                        <span className={`ml-3 transition-all duration-300 whitespace-nowrap ${
+                            isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}>
+                            Carga Académica
+                        </span>
+                        {activeItem === "cargaAcademica" && (
+                            <div className={`ml-auto w-1.5 h-5 bg-blue-600 rounded-full transition-opacity duration-300 ${
+                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}></div>
                         )}
                     </Link>
 
@@ -215,30 +290,38 @@ export const Navbar = () => {
                         }`}
                         onClick={() => handleMenuItemClick("analisisEstres")}
                     >
-                        <div className={`min-w-8 flex justify-center ${!isExpanded ? 'w-full' : ''}`}>
+                        <div className={`flex justify-center w-8`}>
                             <HiOutlineChartBar className={`${activeItem === "analisisEstres" ? "text-blue-600" : "text-gray-500"} text-xl`} />
                         </div>
-                        {isExpanded && <span className="ml-3 transition-opacity duration-200">Análisis de Estrés</span>}
-                        {isExpanded && activeItem === "analisisEstres" && (
-                            <div className="ml-auto w-1 h-5 bg-blue-600 rounded-full"></div>
+                        <span className={`ml-3 transition-all duration-300 whitespace-nowrap ${
+                            isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                        }`}>
+                            Análisis de Estrés
+                        </span>
+                        {activeItem === "analisisEstres" && (
+                            <div className={`ml-auto w-1.5 h-5 bg-blue-600 rounded-full transition-opacity duration-300 ${
+                                isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}></div>
                         )}
                     </Link>
                 </nav>
                 
-                {/* Botón para colapsar/expandir - Versión mejorada */}
-                <div className="px-3">
-                    <button 
+                {/* Control de colapsar/expandir en la parte inferior */}
+                <div className="mt-auto pt-6 px-3">
+                    <div 
                         onClick={toggleNavbar}
-                        className={`flex items-center justify-center w-full p-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-200`}
+                        className={`flex items-center text-sm text-gray-500 hover:text-gray-700 cursor-pointer py-2 transition-opacity duration-300 ${
+                            isExpanded ? "opacity-100 justify-between" : "opacity-0 group-hover:opacity-100 justify-center"
+                        }`}
                     >
-                        <MdKeyboardArrowLeft 
-                            className={`text-gray-500 transition-transform duration-300 ${isExpanded ? 'rotate-0' : 'rotate-180'}`} 
-                            size={22}
+                        <span className={`${isExpanded ? "block" : "hidden group-hover:block"}`}>
+                            {isExpanded ? "Colapsar menú" : "Expandir menú"}
+                        </span>
+                        <MdChevronLeft 
+                            className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : 'rotate-180'}`} 
+                            size={18}
                         />
-                        {isExpanded && (
-                            <span className="ml-2 text-sm text-gray-600">Colapsar</span>
-                        )}
-                    </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -37,6 +37,7 @@ export interface Materia {
   estado: string;
   descripcion?: string;
   profesor:string
+  tipo:string
 }
 
 export interface Estudiante {
