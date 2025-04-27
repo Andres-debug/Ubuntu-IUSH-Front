@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../../modules/auth/LoginPage';
-import Dashboard from '../../modules/Dashboard/Dashboard';
+import { Main } from '../../modules/layout/Main/Main';
 import ProtectedRoutes from './ProtectedRoutes';
 
 const AppRoutes = () => {
@@ -13,10 +13,10 @@ const AppRoutes = () => {
       <Routes>
         {/* Rutas públicas */}
         <Route path="/login" element={<LoginPage />} />
-        
+          
         {/* Rutas protegidas */}
         <Route element={<ProtectedRoutes isAuthenticated={isAuthenticated} />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Main />} />
           {/* Aquí puedes agregar más rutas protegidas */}
           {/* <Route path="/profile" element={<Profile />} /> */}
           {/* <Route path="/settings" element={<Settings />} /> */}
