@@ -1,5 +1,6 @@
 import { Navbar } from "../Navbar/Navbar";
 import Dashboard from "../../../pages/Dashboard/Dashboard";
+import { Header } from "../Header/Header";
 
 export const Main = () => {
 
@@ -8,8 +9,13 @@ export const Main = () => {
             <div>
                 <Navbar/>
             </div>
-            <div>
-                <Dashboard/>
+            <div className="h-[100vh] w-[100%] ">
+                <div>
+                    <Header/>
+                </div>
+                <div>
+                    <Dashboard/>
+                </div>
             </div>
         </div>
     );

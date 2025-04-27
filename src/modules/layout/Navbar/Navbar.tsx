@@ -11,7 +11,7 @@ export const Navbar = () => {
     const chartIcon = () => (<FaChartLine className="text-2xl" />);
 
     return(
-        <div className="bg-white h-[100vh] w-[230px] p-4">
+        <div className="bg-red h-[100vh] w-[230px] p-4">
             <button className="btn btn-primary w-full mb-6">{hamburgerIcon()}</button>
             <div className="flex flex-col gap-3 mt-4">
                 <button className="btn btn-outline text-left">{homeIcon()} Inicio</button>
