@@ -25,8 +25,8 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Usuario */}
           <div className="flex flex-col gap-2">
-            <label 
-              htmlFor="username" 
+            <label
+              htmlFor="username"
               className="text-gray-600 text-sm font-normal p-[2%]"
             >
               Usuario
@@ -44,8 +44,8 @@ const LoginPage = () => {
 
           {/* Contraseña */}
           <div className="flex flex-col gap-2">
-            <label 
-              htmlFor="password" 
+            <label
+              htmlFor="password"
               className="text-gray-600 text-sm font-normal p-[2%]"
             >
               Contraseña
@@ -60,27 +60,25 @@ const LoginPage = () => {
               required
             />
           </div>
-
           {/* Recordarme */}
-          <div className="flex items-center justify-around text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:justify-between text-sm text-gray-500">
             <div className="flex items-center gap-2">
-              <input 
-                id="remember" 
-                type="checkbox" 
+              <input
+                id="remember"
+                type="checkbox"
                 className="h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded cursor-pointer"
               />
               <label htmlFor="remember" className="cursor-pointer">
                 Recordarme
               </label>
             </div>
-            <a 
-              href="#" 
-              className="text-blue-500 hover:text-blue-700 font-medium"
+            <a
+              href="#"
+              className="text-blue-500 hover:text-blue-700 font-medium mt-2 sm:mt-0"
             >
               ¿Olvidó su contraseña?
             </a>
           </div>
-
           {/* Botón */}
           <button
             type="submit"
