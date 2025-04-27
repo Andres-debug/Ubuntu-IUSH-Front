@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => {
+interface LoginPageProps {
+  setIsAuthenticated: (value: boolean) => void;
+}
+
+const LoginPage = ({ setIsAuthenticated }: LoginPageProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -10,7 +14,16 @@ const LoginPage = () => {
     e.preventDefault();
 
     if (username && password) {
+      // Almacenamos el token
       localStorage.setItem('token', 'fake-token');
+      
+      // Actualizamos el estado de autenticación
+      setIsAuthenticated(true);
+      
+      // Emitimos un evento personalizado para notificar el cambio en localStorage
+      window.dispatchEvent(new Event('storage-changed'));
+      
+      // Navegamos al dashboard
       navigate('/dashboard');
     }
   };
